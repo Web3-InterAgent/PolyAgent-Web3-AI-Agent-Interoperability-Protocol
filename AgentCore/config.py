@@ -6,7 +6,7 @@ class Config:
     """
     # OpenAI API 配置
     # 强烈建议使用环境变量来设置 API 密钥，避免硬编码
-   
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', 'your-openai-api-key-here')
     OPENAI_API_URL = os.getenv('OPENAI_API_URL', 'https://api.openai.com/v1/')
     
     # ModelScope API 配置  

@@ -419,14 +419,14 @@ class AgentManager:
 
     async def run_alipay_query(self, query: str):
         import os
-        # 使用绝对路径来定位 MCP 配置文件，避免相对路径问题
+                # 使用绝对路径来定位 MCP 配置文件，避免相对路径问题
         config_path = os.path.join(os.path.dirname(__file__), "..", "Mcp", "alipay_server.json")
         config_path = os.path.abspath(config_path)
         
         try:
-        async with MCPToolkit(config_path=config_path) as mcp_toolkit:
-            alipay_agent = ChatAgent(
-                system_message="""
+            async with MCPToolkit(config_path=config_path) as mcp_toolkit:
+                alipay_agent = ChatAgent(
+                    system_message="""
                     You are an Alipay Agent for a cross-border payment service. Your task is to create a payment order in Chinese Yuan (RMB) for a product priced in US Dollars.
 
                     **Action: Create Payment Order (`create_payment`)**
