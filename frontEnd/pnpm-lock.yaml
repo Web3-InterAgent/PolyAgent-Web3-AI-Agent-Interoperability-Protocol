@@ -42,6 +42,12 @@ importers:
       '@eslint/js':
         specifier: ^9.25.0
         version: 9.27.0
+      '@stagewise-plugins/react':
+        specifier: ^0.4.7
+        version: 0.4.7(@stagewise/toolbar@0.4.6)
+      '@stagewise/toolbar-react':
+        specifier: ^0.4.6
+        version: 0.4.6(@types/react@19.1.4)(react@19.1.0)
       '@types/react':
         specifier: ^19.1.2
         version: 19.1.4
@@ -785,6 +791,20 @@ packages:
 
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
+
+  '@stagewise-plugins/react@0.4.7':
+    resolution: {integrity: sha512-o3pa/2Tc/Lo+e7OEEDx45vx2NczPgDyGYQHfCZzN0IHLVDm/mj5uSmi5Ldo2NjJdThK4hSQNA5MLc4zBhkUlNg==}
+    peerDependencies:
+      '@stagewise/toolbar': 0.4.7
+
+  '@stagewise/toolbar-react@0.4.6':
+    resolution: {integrity: sha512-/CY7yNEireBCm7U36kWSGwKcWJp8i0IWsI8kA55jiA0sL4vBrVYcNb44afgCJk0s9LVo04aqjiYlcXnFZcEn6g==}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      react: '>=18.0.0'
+
+  '@stagewise/toolbar@0.4.6':
+    resolution: {integrity: sha512-XMPTuj7yhqjwnr7ap4OHJHA132fRgTf7uU936anlW6eINJcFRx2hWOiHXnc7d4ZssBXiuwJv6mMY3K7UJDaAwg==}
 
   '@tanstack/query-core@5.76.0':
     resolution: {integrity: sha512-FN375hb8ctzfNAlex5gHI6+WDXTNpe0nbxp/d2YJtnP+IBM6OUm7zcaoCW6T63BawGOYZBbKC0iPvr41TteNVg==}
@@ -3675,6 +3695,18 @@ snapshots:
       '@scure/base': 1.2.5
 
   '@socket.io/component-emitter@3.1.2': {}
+
+  '@stagewise-plugins/react@0.4.7(@stagewise/toolbar@0.4.6)':
+    dependencies:
+      '@stagewise/toolbar': 0.4.6
+
+  '@stagewise/toolbar-react@0.4.6(@types/react@19.1.4)(react@19.1.0)':
+    dependencies:
+      '@stagewise/toolbar': 0.4.6
+      '@types/react': 19.1.4
+      react: 19.1.0
+
+  '@stagewise/toolbar@0.4.6': {}
 
   '@tanstack/query-core@5.76.0': {}
 

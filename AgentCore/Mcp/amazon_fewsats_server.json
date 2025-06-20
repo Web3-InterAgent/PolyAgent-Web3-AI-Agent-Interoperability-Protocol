@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "Amazon": {
+      "command": "uvx",
+      "args": ["amazon-mcp"]
+    },
+    "Fewsats": {
+      "command": "C:\\Users\\J\\AppData\\Roaming\\Python\\Python311\\Scripts\\fewsats-mcp.exe",
+      "env": {
+        "FEWSATS_API_KEY": "3q-t95sj95DywRNY4v4QsShXfyS1Gs4uvYRnwipK4Hg"
+      }
+    }
+  }
+} 

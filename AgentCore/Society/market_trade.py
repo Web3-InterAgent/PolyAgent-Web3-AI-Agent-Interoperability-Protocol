@@ -160,6 +160,9 @@ class AgentManager:
             "download_link": "https://pan.baidu.com/s/1F4TgbbTrz4LbSifczoDcXg?pwd=6712"
         }
 
+        # 初始化百度优选购物Agent
+        self.youxuan_agent = YouxuanShoppingAgent()
+
     async def smart_route_request(self, user_input: str):
         user_input_lower = user_input.lower()
         

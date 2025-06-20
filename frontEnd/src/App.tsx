@@ -1,14 +1,10 @@
 import {
-	faBolt,
-	faCog,
 	faCommentAlt,
-	faHistory,
 	faMicrophone,
 	faPaperPlane,
 	// faUser,
 	faPlus,
 	faTimes,
-	faWallet,
 	faSignature,
 	faPen,
 } from "@fortawesome/free-solid-svg-icons";
@@ -22,44 +18,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import "./ai-response.css";
 import "./rainbow.css";
 
-// Stagewise dev-tool integration (development only)
-declare const process: any; // Suppress TypeScript errors for process
-
-if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
-  // Initialize stagewise toolbar asynchronously to avoid blocking the main app
-  const initStagewise = async () => {
-    try {
-      // Dynamic import to handle optional dependency
-      const stagewiseModule = await eval('import("@stagewise/toolbar")') as any;
-      const { initToolbar } = stagewiseModule;
-      
-      const stagewiseConfig = {
-        plugins: []
-      };
-      
-      // Ensure toolbar container exists
-      let toolbarContainer = document.getElementById('stagewise-toolbar-container');
-      if (!toolbarContainer) {
-        toolbarContainer = document.createElement('div');
-        toolbarContainer.id = 'stagewise-toolbar-container';
-        toolbarContainer.style.zIndex = '999999';
-        document.body.appendChild(toolbarContainer);
-      }
-      
-      initToolbar(stagewiseConfig);
-      console.log('✅ Stagewise toolbar initialized');
-    } catch (error) {
-      console.warn('🔧 Stagewise toolbar not available (install with: npm install @stagewise/toolbar --save-dev)');
-    }
-  };
-  
-  // Initialize after DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initStagewise);
-  } else {
-    initStagewise();
-  }
-}
+// Stagewise will be dynamically imported in the App component
 
 import {
 	ConnectButton,
@@ -106,7 +65,7 @@ const iotexTestnet: Chain = {
 
 // 配置 RainbowKit
 const config = getDefaultConfig({
-	appName: "PolyAgent",
+	appName: "InterAgent",
 	// 从 WalletConnect Cloud 获取项目ID: https://cloud.walletconnect.com/
 	// 1. 注册/登录 WalletConnect Cloud
 	// 2. 创建一个新项目并输入应用名称和URL
@@ -143,7 +102,7 @@ interface Conversation {
 
 
 // 添加AI助手类型枚举
-type AIAgentType = "monitor" | "trade";
+type AIAgentType = "shopping" | "trade";
 
 // 签名功能组件
 function WalletSignature() {
@@ -153,7 +112,7 @@ function WalletSignature() {
   const [signatureResult, setSignatureResult] = useState("");
   const [recipientAddress, setRecipientAddress] = useState("");
   const [sendAmount, setSendAmount] = useState("");
-  const [showSignaturePanel, setShowSignaturePanel] = useState(false);
+  // const [showSignaturePanel, setShowSignaturePanel] = useState(false);
   const { signMessage, isPending: isSignPending } = useSignMessage({
     mutation: {
       onSuccess: (signature) => {
@@ -321,12 +280,34 @@ function App() {
 
 	const [showLogoOverlay, setShowLogoOverlay] = useState(false);
 
+	// Stagewise toolbar state (development only)
+	const [StagewiseToolbar, setStagewiseToolbar] = useState<any>(null);
+	const [ReactPlugin, setReactPlugin] = useState<any>(null);
 
-
-
+	// Load stagewise components dynamically in development mode
+	useEffect(() => {
+		if (import.meta.env.DEV) {
+			const loadStagewise = async () => {
+				try {
+					const [toolbarModule, pluginModule] = await Promise.all([
+						import('@stagewise/toolbar-react'),
+						import('@stagewise-plugins/react')
+					]);
+					
+					setStagewiseToolbar(() => toolbarModule.StagewiseToolbar);
+					setReactPlugin(() => pluginModule.ReactPlugin);
+					console.log('✅ Stagewise toolbar loaded successfully');
+				} catch (error) {
+					console.warn('🔧 Stagewise toolbar not available (install with: pnpm add @stagewise/toolbar-react @stagewise-plugins/react --save-dev)');
+				}
+			};
+			
+			loadStagewise();
+		}
+	}, []);
 
 	// 添加AI助手选择状态
-	const [selectedAgent, setSelectedAgent] = useState<AIAgentType>("monitor");
+	const [selectedAgent, setSelectedAgent] = useState<AIAgentType>("shopping");
 	const [isAgentSwitching, setIsAgentSwitching] = useState(false);
 
 	// Tooltip状态
@@ -352,7 +333,7 @@ function App() {
 		setSelectedAgent(agentType);
 		setIsAgentSwitching(false);
 
-		console.log(`AI助手已切换至: ${agentType === 'monitor' ? '加密货币监控' : '支付宝转stablecoin'}`);
+		console.log(`AI助手已切换至: ${agentType === 'shopping' ? '百度优选购物' : '支付宝转stablecoin'}`);
 	};
 
 	// Tooltip处理函数
@@ -378,13 +359,16 @@ function App() {
 
 	// 获取Agent描述信息
 	const getAgentDescription = (agent: AIAgentType) => {
-		if (agent === "monitor") {
+		if (agent === "shopping") {
 			return {
-				title: "🚀 Cryptocurrency Market Assistant",
-				description: "Get price data, analyze market trends and develop trading strategies",
+				title: "🛍️ 百度优选购物助手",
+				description: "智能商品搜索、参数对比、品牌排行和在线购买服务",
 				features: [
-
-
+					"🔍 商品搜索与推荐",
+					"📊 商品参数对比分析", 
+					"🏆 品牌排行榜查询",
+					"🛒 在线购买与订单管理",
+					"🔧 售后服务支持"
 				]
 			};
 		} else {
@@ -392,8 +376,10 @@ function App() {
 				title: "💰 Payment Bridge Assistant",
 				description: "Assist with stablecoin transfers and cross-border payment operations",
 				features: [
-
-
+					"💳 跨境支付桥接",
+					"🔗 区块链代币操作",
+					"📝 智能合约交互",
+					"📊 交易状态追踪"
 				]
 			};
 		}
@@ -413,7 +399,9 @@ function App() {
 			const currentConversation = JSON.parse(storedConversations || "[]").find(
 				(conv: Conversation) => conv.id === currentId
 			);
-			
+			if (currentConversation) {
+				setMessages(currentConversation.messages);
+			}
 		}
 	}, []);
 
@@ -607,7 +595,7 @@ function App() {
 		const backendPromise = (async () => {
 			try {
 				console.log("⚡ 立即开始调用后端获取支付宝按钮...");
-				const response = await fetch("http://localhost:5000/market-trade", {
+				const response = await fetch("/market-trade", {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
@@ -891,47 +879,78 @@ function App() {
 			return; // 直接返回，不调用后端API
 		}
 
+		// 创建新的AI消息但不填充内容
+		const aiResponse: Message = {
+			text: "",
+			sender: "ai",
+			type: "html",
+		};
+		console.log(messages, "messages---xxx");
+		setMessages((prev) => [...prev, aiResponse]);
+
 		try {
-			// 创建新的AI消息但不填充内容
-			const aiResponse: Message = {
-				text: "",
-				sender: "ai",
-				type: "html",
-			};
-			console.log(messages, "messages---xxx");
-
-			setMessages((prev) => [...prev, aiResponse]);
-
 			// 根据选择的agent类型调用不同的API接口
 			let apiEndpoint = "";
-			if (selectedAgent === "monitor") {
-				apiEndpoint = "http://localhost:5000/market-monitor"; // 加密货币市场助手
-				console.log("使用Monitor Agent API");
+			if (selectedAgent === "shopping") {
+				apiEndpoint = "/api/chat"; // Amazon购物助手 - 使用新的统一API
+				console.log("使用Amazon Shopping Agent API");
 			} else if (selectedAgent === "trade") {
-				apiEndpoint = "http://localhost:5000/market-trade"; // 支付宝转代币助手
+				apiEndpoint = "/market-trade"; // 支付宝转代币助手
 				console.log("使用Trade Agent API");
 			} else {
 				console.error("未知的Agent类型:", selectedAgent);
+				throw new Error(`未知的Agent类型: ${selectedAgent}`);
 			}
 
 			console.log("API端点:", apiEndpoint);
 
-			// 使用fetch API和ReadableStream处理流式响应
-			try {
-				const response = await fetch(apiEndpoint, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						message: message
-					}),
-				});
+			const response = await fetch(apiEndpoint, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					message: message
+				}),
+			});
 
-				if (!response.ok) {
-					throw new Error(`HTTP error! Status: ${response.status}`);
+			if (!response.ok) {
+				throw new Error(`HTTP error! Status: ${response.status}`);
+			}
+
+			// 如果是购物助手，处理JSON响应
+			if (selectedAgent === "shopping") {
+				const data = await response.json();
+				console.log("Amazon购物助手响应:", data);
+				
+				if (data.success && data.response) {
+					// 直接使用response字段的内容，格式化换行符
+					let formattedText = data.response
+						.replace(/\n/g, "<br>") // 将\n替换为HTML的<br>标签
+						.replace(/\r/g, ""); // 移除可能存在的\r字符
+
+					console.log("格式化后的响应文本:", formattedText.substring(0, 200) + "...");
+
+					// 更新UI上的消息
+					setMessages((prev) => {
+						const updatedMessages = [...prev];
+						const lastMessage = updatedMessages[updatedMessages.length - 1];
+
+						if (lastMessage && lastMessage.sender === "ai") {
+							lastMessage.text = formattedText;
+							console.log("✅ 成功更新AI消息内容");
+						} else {
+							console.error("❌ 没有找到要更新的AI消息");
+						}
+
+						return updatedMessages;
+					});
+				} else {
+					console.error("❌ Amazon购物助手响应格式错误:", data);
+					throw new Error(data.error || "Amazon购物助手响应失败");
 				}
-
+			} else {
+				// 其他助手使用流式响应处理
 				if (!response.body) {
 					throw new Error("ReadableStream not supported");
 				}
@@ -962,7 +981,7 @@ function App() {
 								.replace(/\r/g, ""); // 移除可能存在的\r字符
 
 							// 调试：输出接收到的HTML内容（仅在开发模式下）
-							if (process.env.NODE_ENV === 'development') {
+							if (import.meta.env.DEV) {
 								console.log("接收到的AI响应内容:", formattedText);
 								
 								// 检查是否包含按钮HTML
@@ -977,24 +996,33 @@ function App() {
 						return updatedMessages;
 					});
 				}
-			} catch (streamError) {
-				console.error("流式响应处理错误:", streamError);
 			}
 
-			// 请求完成后，确保设置isTyping为false
-			setIsTyping(false);
-		} catch (error) {
-			console.error("请求错误:", error);
+			// 请求成功完成
+			console.log("✅ API请求成功完成");
 			setIsTyping(false);
 
-			// 显示错误消息
+		} catch (error) {
+			console.error("❌ API请求错误:", error);
+			setIsTyping(false);
+
+			// 显示详细的错误信息
+			let errorMessage = "Sorry, an error occurred. Please try again.";
+			if (error instanceof Error) {
+				console.error("错误详情:", error.message);
+				// 在开发环境显示详细错误
+				if (import.meta.env.DEV) {
+					errorMessage = `开发模式错误: ${error.message}`;
+				}
+			}
+
+			// 更新UI显示错误消息
 			setMessages((prev) => {
 				const updatedMessages = [...prev];
 				const lastMessage = updatedMessages[updatedMessages.length - 1];
 
 				if (lastMessage && lastMessage.sender === "ai") {
-					lastMessage.text =
-						"<p class='text-red-500 whitespace-pre-wrap'>Sorry, an error occurred. Please try again.</p>";
+					lastMessage.text = `<p class='text-red-500 whitespace-pre-wrap'>${errorMessage}</p>`;
 				}
 
 				return updatedMessages;
@@ -1326,6 +1354,14 @@ function App() {
 			<QueryClientProvider client={queryClient}>
 				<RainbowKitProvider>
 					<div className="app-container min-h-screen text-text-primary relative noise-bg">
+						{/* Stagewise Toolbar - Development Only */}
+						{StagewiseToolbar && ReactPlugin && (
+							<StagewiseToolbar 
+								config={{
+									plugins: [ReactPlugin]
+								}}
+							/>
+						)}
 						{/* 粒子背景 */}
 						<div className="particles" id="particles"></div>
 
@@ -1345,7 +1381,7 @@ function App() {
 										</div>
 									</div>
 									<h1 className="text-xl font-bold tracking-tight">
-										PolyAgent
+										InterAgent
 										{/* <span className="text-neon-cyan">.AI</span> */}
 									</h1>
 								</div>
@@ -1353,22 +1389,22 @@ function App() {
 								{/* AI助手切换按钮组 */}
 								<div className="flex items-center space-x-1 bg-deep-black/50 backdrop-blur-md border border-night-purple/20 rounded-lg p-1 agent-switch-container">
 														<button
-						onClick={() => handleAgentSwitch("monitor")}
-						onMouseEnter={(e) => handleMouseEnter("monitor", e)}
+						onClick={() => handleAgentSwitch("shopping")}
+						onMouseEnter={(e) => handleMouseEnter("shopping", e)}
 						onMouseLeave={handleMouseLeave}
 						disabled={isAgentSwitching}
-						className={`agent-switch-button relative px-4 py-2 rounded-md font-medium text-sm transition-all duration-300 ${selectedAgent === "monitor"
+						className={`agent-switch-button relative px-4 py-2 rounded-md font-medium text-sm transition-all duration-300 ${selectedAgent === "shopping"
 							? "bg-gradient-to-r from-neon-cyan/20 to-night-purple/20 text-neon-cyan border border-neon-cyan/30 shadow-lg agent-switch-active"
 							: "text-text-secondary hover:text-text-primary hover:bg-white/5"
 							} ${isAgentSwitching ? "opacity-50 cursor-not-allowed agent-switching" : ""}`}
 					>
-						{isAgentSwitching && selectedAgent === "monitor" && (
+						{isAgentSwitching && selectedAgent === "shopping" && (
 							<div className="absolute inset-0 rounded-md bg-gradient-to-r from-neon-cyan/10 to-night-purple/10 animate-pulse"></div>
 						)}
 						<span className="relative flex items-center space-x-2">
-							<span className="agent-switch-icon">📈</span>
-							<span className="hidden sm:inline">Crypto Monitor</span>
-							<span className="sm:hidden">Monitor</span>
+							<span className="agent-switch-icon">🛍️</span>
+							<span className="hidden sm:inline">Shopping</span>
+							<span className="sm:hidden">Shop</span>
 						</span>
 					</button>
 
@@ -1541,7 +1577,7 @@ function App() {
 															</div>
 														</div>
 														<p className="text-sm text-text-secondary">
-															PolyAgent
+															InterAgent
 														</p>
 													</div>
 													{msg.type === "html" ? (
@@ -1647,7 +1683,7 @@ function App() {
 
 									{/* Logo 信息 */}
 									<div className="mt-6 text-center text-white/90">
-										<h2 className="text-2xl font-bold mb-2">PolyAgent</h2>
+										<h2 className="text-2xl font-bold mb-2">InterAgent</h2>
 										<p className="text-sm text-white/70">Web3 AI Agent Interoperability Protocol</p>
 										<p className="text-xs text-white/50 mt-2">320x320 pixels - Ready for icon processing</p>
 									</div>
